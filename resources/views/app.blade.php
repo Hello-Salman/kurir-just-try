@@ -23,6 +23,9 @@
     }
   </style>
 
+  <script src="https://app.sandbox.midtrans.com/snap/snap.js" data-client-key="SB-Mid-client-N44gzw-v-hm6Vwq6"></script>
+
+
   @vite('resources/js/main.ts')
 </head>
 

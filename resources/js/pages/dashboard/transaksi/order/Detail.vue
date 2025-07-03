@@ -3,31 +3,23 @@ import { ref, watch } from "vue";
 import axios from "@/libs/axios";
 import type { Order} from "@/types/order";
 import type { Menu} from "@/types/menu";
+// import { toast } from "vue3-toastify";
 
 // Props dari parent
 const props = defineProps<{
   order: Order | null;
   show: boolean;
 }>();
-const emit = defineEmits(["close"]);
+const emit = defineEmits(["close", "refresh"]);
 
 // State untuk data menu dan pelanggan
 const menuDetail = ref<Menu | null>(null);
 
+// State pembayaran
+const isPaying = ref(false);
+
 // Ref untuk area yang akan diprint
 const printArea = ref<HTMLDivElement | null>(null);
-
-// Fungsi print struk
-function printReceipt() {
-  if (!printArea.value) return;
-  const printContents = printArea.value.innerHTML;
-  const originalContents = document.body.innerHTML;
-  document.body.innerHTML = printContents;
-  window.print();
-  document.body.innerHTML = originalContents;
-  window.location.reload(); // reload agar tampilan kembali normal
-}
-
 
 // Ambil data menu dari API berdasarkan id_menu
 const fetchMenu = async (id_menu: BigInteger) => {
@@ -39,7 +31,6 @@ const fetchMenu = async (id_menu: BigInteger) => {
   }
 };
 
-
 // Watcher: setiap order berubah, ambil data menu & pelanggan
 watch(
   () => props.order,
@@ -50,6 +41,17 @@ watch(
   },
   { immediate: true }
 );
+
+const printStruk = () => {
+  if (!printArea.value) return;
+  const printContents = printArea.value.innerHTML;
+  const originalContents = document.body.innerHTML;
+  document.body.innerHTML = printContents;
+  window.print();
+  document.body.innerHTML = originalContents;
+  window.location.reload(); // reload agar tampilan kembali normal
+};
+
 </script>
 
 <template>
@@ -61,7 +63,6 @@ watch(
           <div class="receipt-header">
             <div class="text-center mb-4">
               <img src="/media/profil.jpg" alt="Logo" class="receipt-logo">
-              <!-- <h2 class="receipt-title">Easy Eats</h2> -->
               <p class="receipt-subtitle">Terima Kasih Atas Kunjungan Anda!</p>
             </div>
             <hr class="divider">
@@ -76,8 +77,12 @@ watch(
                 <span>x{{ order.jumlah ?? 1 }}</span>
               </div>
               <div class="d-flex justify-content-between mt-2">
-                <span>Harga</span>
-                <span>Rp {{ Number(order.menu?.harga).toLocaleString("id-ID") }}</span>
+                <span>Total Harga</span>
+                <span>Rp {{ Number(order.menu?.harga * order.jumlah).toLocaleString("id-ID") }}</span>
+              </div>
+              <div class="d-flex justify-content-between mt-2">
+                <span>Ongkir</span>
+                <span>Rp {{ Number(order.biaya ?? 0).toLocaleString("id-ID") }}</span>
               </div>
             </div>
           </div>
@@ -88,7 +93,7 @@ watch(
               <span class="font-weight-bold">Total Pembayaran</span>
               <span class="font-weight-bold text-primary">
                 Rp {{
-                  Number(order.menu?.harga * order.jumlah).toLocaleString("id-ID")
+                  Number(order.menu?.harga * order.jumlah + order.biaya).toLocaleString("id-ID")
                 }}
               </span>
             </div>
@@ -101,10 +106,10 @@ watch(
           </div>
         </div>
         <div class="modal-footer">
-          <button type="button" class="btn btn-primary" @click="emit('close')">Tutup</button>
-          <button type="button" class="btn btn-success ms-2" @click="printReceipt">
-            <i class="la la-print me-1"></i> Print Struk
-          </button>
+            <button type="button" class="btn btn-primary me-2" @click="printStruk">
+                <i class="la la-print me-1"></i>Cetak
+            </button>
+            <!-- <button type="button" class="btn btn-primary" @click="emit('close')">Tutup</button> -->
         </div>
       </div>
     </div>

@@ -16,6 +16,16 @@ declare module "vue-router" {
 }
 
 const routes: Array<RouteRecordRaw> = [
+
+    {
+        path: "/CekResi",
+        name: "CekResi",
+        component: () => import("@/pages/dashboard/CekResi.vue"),
+        meta: {
+            pageTitle: "Cek Resi",
+            middleware: "guest",
+        },
+    },
     {
         path: "/",
         redirect: "/dashboard",
@@ -28,9 +38,27 @@ const routes: Array<RouteRecordRaw> = [
                 path: "/dashboard",
                 name: "dashboard",
                 component: () => import("@/pages/dashboard/Index.vue"),
+                // meta: {
+                //     pageTitle: "Dashboard",
+                //     breadcrumbs: ["Dashboard"],
+                // },
+            },
+            {
+                path: "/utama",
+                name: "utama",
+                component: () => import("@/pages/dashboard/Utama.vue"),
                 meta: {
-                    pageTitle: "Dashboard",
-                    breadcrumbs: ["Dashboard"],
+                    pageTitle: "Utama",
+                    breadcrumbs: ["Utama"],
+                },
+            },
+            {
+                path: "/CekResi",
+                name: "CekResi",
+                component: () => import("@/pages/dashboard/CekResi.vue"),
+                meta: {
+                    pageTitle: "CekResi",
+                    breadcrumbs: ["CekResi"],
                 },
             },
             {
@@ -100,32 +128,53 @@ const routes: Array<RouteRecordRaw> = [
                 name: "dashboard.restoran.profil",
                 component: () =>
                     import("@/pages/dashboard/restoran/profil/Index.vue"),
-                meta: {
-                    pageTitle: "Restoran",
-                    breadcrumbs: ["Restoran", "Profil"],
-                },
+                // meta: {
+                //     pageTitle: "Restoran",
+                //     breadcrumbs: ["Restoran", "Profil"],
+                // },
             },
 
             // ORDER
             {
-                path: "/dashboard/order",
-                name: "dashboard.order",
+                path: "/dashboard/transaksi/order",
+                name: "dashboard.transaksi.order",
                 component: () =>
-                    import("@/pages/dashboard/order/Index.vue"),
-                meta: {
-                    pageTitle: "Order",
-                    breadcrumbs: ["Order" ],
-                },
+                    import("@/pages/dashboard/transaksi/order/Index.vue"),
+                // meta: {
+                //     pageTitle: "Order",
+                //     breadcrumbs: ["Order" ],
+                // },
             },
+            {
+                path: "/dashboard/transaksi/riwayat",
+                name: "dashboard.transaksi.riwayat",
+                component: () =>
+                    import("@/pages/dashboard/transaksi/riwayat/Index.vue"),
+                // meta: {
+                //     pageTitle: "Pembayaran",
+                //     breadcrumbs: ["Pembayaran" ],
+                // },
+            },
+
             // PENGIRIMAN
             {
-                path: "/dashboard/pengiriman",
-                name: "dashboard.pengiriman",
+                path: "/dashboard/pengiriman/kirim",
+                name: "dashboard.pengiriman.kirim",
                 component: () =>
-                    import("@/pages/dashboard/pengiriman/Index.vue"),
+                    import("@/pages/dashboard/pengiriman/kirim/Index.vue"),
+                // meta: {
+                //     pageTitle: "Pengiriman",
+                //     breadcrumbs: ["Pengiriman", "Kirim Order"],
+                // },
+            },
+            {
+                path: "/dashboard/pengiriman/rating",
+                name: "dashboard.pengiriman.rating",
+                component: () =>
+                    import("@/pages/dashboard/pengiriman/rating/Index.vue"),
                 meta: {
                     pageTitle: "Pengiriman",
-                    breadcrumbs: ["Pengiriman"],
+                    breadcrumbs: ["Pengiriman", "Rating"],
                 },
             },
         ],
@@ -140,6 +189,21 @@ const routes: Array<RouteRecordRaw> = [
                 component: () => import("@/pages/auth/sign-in/Index.vue"),
                 meta: {
                     pageTitle: "Sign In",
+                    middleware: "guest",
+                },
+            },
+        ],
+    },
+    {
+        path: "/",
+        component: () => import("@/layouts/AuthLayout.vue"),
+        children: [
+            {
+                path: "/sign-up",
+                name: "sign-up",
+                component: () => import("@/pages/auth/sign-up/Index.vue"),
+                meta: {
+                    pageTitle: "Sign Up",
                     middleware: "guest",
                 },
             },
@@ -220,6 +284,9 @@ router.beforeEach(async (to, from, next) => {
 
     // before page access check if page requires authentication
     if (to.meta.middleware == "auth") {
+        if(to.name =="dashboard" && authStore.user.role?.name == "pelanggan"){
+            next({ name: "dashboard.restoran.profil"})
+        }
         if (authStore.isAuthenticated) {
             if (
                 to.meta.permission &&
@@ -235,6 +302,9 @@ router.beforeEach(async (to, from, next) => {
             next({ name: "sign-in" });
         }
     } else if (to.meta.middleware == "guest" && authStore.isAuthenticated) {
+        if(to.name =="dashboard" && authStore.user.role?.name == "pelanggan"){
+            next({ name: "dashboard.restoran.profil"})
+        }
         next({ name: "dashboard" });
     } else {
         next();

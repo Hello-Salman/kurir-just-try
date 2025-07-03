@@ -4,3 +4,5 @@ export type { Kurir } from "./kurir";
 export type { Menu } from "./menu";
 export type { Setting } from "./setting";
 export type { Order } from "./order";
+export type { Kirim } from "./kirim";
+export type { Rating } from "./rating";

@@ -9,6 +9,19 @@ const MainMenuConfig: Array<MenuItem> = [
                 route: "/dashboard",
                 keenthemesIcon: "element-11",
             },
+
+            {
+                heading: "User Dashboard",
+                name: "utama",
+                route: "/utama",
+                keenthemesIcon: "chart-line-up-2",
+            },
+            {
+                heading: "Cek Resi",
+                name: "CekResi",
+                route: "/CekResi",
+                keenthemesIcon: "graph-4",
+            },
         ],
     },
 
@@ -63,7 +76,7 @@ const MainMenuConfig: Array<MenuItem> = [
                         route: "/dashboard/restoran/profil",
                     },
                     {
-                        heading: "Menu",
+                        heading: "Produk",
                         name: "menu",
                         route: "/dashboard/restoran/menu",
                     },
@@ -72,16 +85,41 @@ const MainMenuConfig: Array<MenuItem> = [
 
             // ORDER
             {
-                heading: "Data Order",
-                route: "/dashboard/order",
-                name: "order",
+                sectionTitle: "Transaksi",
+                route: "/dashboard/transaksi",
+                name: "transaksi",
                 keenthemesIcon: "bi bi-basket",
+                sub: [
+                    {
+                        heading: "Tambah Order",
+                        name: "order",
+                        route: "/dashboard/transaksi/order"
+                    },
+                    {
+                        heading: "Riwayat Order",
+                        name: "riwayat",
+                        route: "/dashboard/transaksi/riwayat"
+                    },
+                ],
             },
+            // PENGIRIMAN
             {
-                heading: "Pengiriman",
+                sectionTitle: "Pengiriman",
                 route: "/dashboard/pengiriman",
                 name: "pengiriman",
-                keenthemesIcon: "courier-express",
+                keenthemesIcon: "truck",
+                sub: [
+                    {
+                        heading: "Kirim Order",
+                        name: "kirim",
+                        route: "/dashboard/pengiriman/kirim",
+                    },
+                    {
+                        heading: "Rating & Ulasan",
+                        name: "rating",
+                        route: "/dashboard/pengiriman/rating",
+                    },
+                ],
             },
             {
                 heading: "Setting",

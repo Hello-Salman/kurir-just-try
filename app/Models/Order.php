@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Str;
 
 class Order extends Model
 {
@@ -12,27 +13,42 @@ class Order extends Model
     protected $fillable = [
         'id',
         'id_menu',
-        'id_kurir',
+        'user_id',
+        'no_resi',
         'jumlah',
         'total_harga',
         'status',
         'asal_provinsi_id',
         'asal_kota_id',
+        'alamat_asal',
         'tujuan_provinsi_id',
         'tujuan_kota_id',
+        'alamat_tujuan',
         'ekspedisi',
         'jenis_layanan',
         'biaya',
         // 'photo',
     ];
 
+    protected static function generateNoResi()
+    {
+        $prefix = 'RESI-' . now()->format('Ymd');
+        $random = strtoupper(Str::random(6));
+
+        return $prefix . '-' . $random;
+    }
+
+    public function kirim()
+    {
+        return $this->hasOne(Kirim::class, 'id_order');
+    }
     public function menu()
     {
         return $this->belongsTo(Menu::class, 'id_menu');
     }
-    public function kurir()
+    public function user()
     {
-        return $this->belongsTo(Kurir::class, 'id_kurir');
+        return $this->belongsTo(User::class, 'user_id');
     }
     public function asalProvinsi() {
         return $this->belongsTo(Province::class, 'asal_provinsi_id');

@@ -137,7 +137,7 @@ class KurirController extends Controller
     {
         return response()->json([
             'success' => true,
-            'data' => Kurir::all(),
+            'data' => Kurir::with("user")->get(),
             // 'data' => Kurir::select('id', 'name', 'email', 'phone', 'status', 'rating', 'photo')->get()
         ]);
     }

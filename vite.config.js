@@ -1,4 +1,4 @@
-import { fileURLToPath, URL } from "node:url";
+    import { fileURLToPath, URL } from "node:url";
 
 import process from "node:process";
 import { defineConfig, loadEnv } from "vite";

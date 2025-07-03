@@ -122,7 +122,7 @@ watch(
     ref="formRef"
   >
     <div class="card-header align-items-center">
-      <h2 class="mb-0">{{ selected ? "Edit" : "Tambah" }} Menu</h2>
+      <h2 class="mb-0">{{ selected ? "Edit" : "Tambah" }} Produk</h2>
       <button
         type="button"
         class="btn btn-sm btn-light-danger ms-auto"
@@ -136,7 +136,7 @@ watch(
       <div class="row">
         <div class="col-md-6">
           <div class="fv-row mb-7">
-            <label class="form-label fw-bold fs-6 required">Nama Menu</label>
+            <label class="form-label fw-bold fs-6 required">Nama Produk</label>
             <Field
               class="form-control form-control-lg form-control-solid"
               type="text"
@@ -179,7 +179,7 @@ watch(
         </div>
         <div class="col-md-6">
           <div class="fv-row mb-7">
-            <label class="form-label fw-bold fs-6">Foto Menu</label>
+            <label class="form-label fw-bold fs-6">Foto</label>
             <file-upload
               :files="photo"
               :accepted-file-types="fileTypes"

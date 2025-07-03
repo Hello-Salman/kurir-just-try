@@ -99,4 +99,9 @@ class User extends Authenticatable implements JWTSubject
     {
         return $this->hasOne(Kurir::class, 'user_id');
     }
+
+    public function orders()
+    {
+        return $this->hasMany(Order::class, 'user_id');
+    }
 }

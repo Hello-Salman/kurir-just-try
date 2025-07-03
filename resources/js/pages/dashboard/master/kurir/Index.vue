@@ -18,7 +18,7 @@ const { delete: deleteKurir } = useDelete({
 
 // Definisi kolom tabel kurir
 const columns = [
-  column.accessor("no", { header: "No" }),
+  column.accessor("no", { header: "#" }),
   column.accessor("user.name", { header: "Nama Kurir" }),
   column.accessor("user.email", { header: "Email" }),
   column.accessor("user.phone", { header: "No. Telp" }),

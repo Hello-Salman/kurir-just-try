@@ -5,24 +5,24 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class Menu extends Model
+class Kirim extends Model
 {
     use HasFactory;
 
-    protected $table = 'menus';
-
+    protected $table = 'kirims';
     protected $fillable = [
         'id',
-        'nama_menu',
-        'harga',
-        'kategori',
+        'id_kurir',
+        'id_order',
         'status',
-        'photo',
     ];
 
+    public function kurir()
+    {
+        return $this->belongsTo(Kurir::class, 'id_kurir');
+    }
     public function order()
     {
-        return $this->hasMany(Order::class, 'id_menu');
+        return $this->belongsTo(Order::class, 'id_order');
     }
-
 }

@@ -10,9 +10,8 @@ import { useForm, Field, ErrorMessage, Form as VForm } from "vee-validate";
 import ApiService from "@/core/services/ApiService";
 import { orderColumns } from "@tanstack/vue-table";
 
-
 const authStore = useAuthStore();
-const cutrrentUser = computed(() => authStore.user);
+const currentUser = computed(() => authStore.user);
 
 
 const Order = ref({
@@ -21,8 +20,8 @@ const Order = ref({
     status: "",
     menu: {
         nama_menu: "",
-    harga: 0,
-},
+        harga: 0,
+}
 }as any);
 const formRef = ref();
 
@@ -39,7 +38,7 @@ const cityDestination = ref("");
 const alamat_tujuan = ref("");
 const alamat_asal = ref("");
 const total_harga = ref(0);
-// const nama_menu = ref("");
+const nama_menu = ref("");
 
 // Kurir / ekspedisi dan layanan
 const couriers = ref([
@@ -58,11 +57,13 @@ const biaya = ref<number>(0);
 
 const menu = ref<Menu[]>([]);
 const menuOptions = computed(() =>
-menu.value.map((item) => ({
-    id: item.id,
-    text: item.nama_menu,
-    harga: item.harga,
-}))
+  menu.value
+    .filter((item) => item.status === "Tersedia")
+    .map((item) => ({
+        id: item.id,
+        text: item.nama_menu,
+        harga: item.harga,
+    }))
 );
 const props = defineProps({
     selected: {
@@ -251,6 +252,7 @@ function onSubmit() {
 
   formData.append("id_menu", Order.value.id_menu);
   formData.append("jumlah", Order.value.jumlah);
+  formData.append("user_id", currentUser.value.id);
 
   formData.append("tujuan_provinsi_id", provinceDestination.value);
   formData.append("tujuan_kota_id", cityDestination.value);
@@ -269,7 +271,7 @@ function onSubmit() {
     if (props.selected) {
     formData.append("_method", "PUT");
   } else {
-    formData.append("status", "on_delivery");
+    formData.append("status", "menunggu");
   }
 
   block(document.getElementById("form-order"));
@@ -280,10 +282,14 @@ function onSubmit() {
     headers: { "Content-Type": "multipart/form-data"
     },
   })
-    .then(() => {
+    .then((res) => {
       emit("close");
       emit("refresh");
       toast.success("Data berhasil disimpan");
+      // Tampilkan no_resi jika ada di response
+      if (res.data.no_resi) {
+        toast.info(`No Resi: ${res.data.no_resi}`);
+      }
       formRef.value.resetForm(); // Reset form setelah submit
     })
     .catch((err: any) => {
@@ -314,7 +320,14 @@ function onMenuChange() {
 
 onMounted(async () => {
     // Fetch provinces and cities
-    fetchProvinces();
+    await fetchProvinces();
+    provinceOrigin.value = "11"; // Jawa Timur
+
+    await fetchCities("origin");
+    cityOrigin.value = "444"; // Surabaya
+    alamat_asal.value = "Jl. Citra Husada No. 321, Surabaya";
+
+
   if (props.selected) {
     getEdit();
   }
@@ -344,6 +357,89 @@ watch(
         }
     }
 );
+
+const isPaying = ref(false);
+
+const bayar = async () => {
+    isPaying.value = true;
+    hitungTotal();
+    console.log("Bayar")
+  const draft = {
+  id_menu: Order.value.id_menu,
+  jumlah: Order.value.jumlah,
+  user_id: currentUser.value.id,
+
+  ekspedisi: selectedCourier.value,
+  jenis_layanan: selectedService.value,
+
+  tujuan_provinsi_id: provinceDestination.value,
+  tujuan_kota_id: cityDestination.value,
+  alamat_tujuan: alamat_tujuan.value,
+
+  asal_provinsi_id: provinceOrigin.value,
+  asal_kota_id: cityOrigin.value,
+  alamat_asal: alamat_asal.value,
+
+  berat_barang: berat_barang.value,
+  biaya: biaya.value,
+  total_harga: total_harga.value,
+  status: "dibayar",
+};
+
+  // Simpan data transaksi ke sessionStorage untuk digunakan nanti
+  sessionStorage.setItem("draftTransaksi", JSON.stringify(draft));
+
+  let orderId = props.selected;
+
+  // Jika order baru, simpan dulu ke database
+  if (!orderId) {
+    try {
+      const res = await axios.post("/order/store", draft);
+      orderId = res.data.id; // pastikan backend mengembalikan id order
+    } catch (err) {
+      toast.error("Gagal menyimpan order.");
+      return;
+    }
+  }
+
+  try {
+    const res = await axios.post("/order/snap", draft);
+    const { snap_token } = res.data;
+    if (snap_token) {
+      window.snap.pay(snap_token, {
+        onSuccess: async function (result: any) {
+          console.log("Pembayaran berhasil:", result);
+          toast.success("Pembayaran berhasil!");
+          try {
+            if (props.selected) {
+                await axios.put(`/order/${props.selected}`, { status: "dibayar" });
+            }
+            emit("refresh");
+            emit("close");
+          } catch (e) {
+            toast.error("Gagal update status order.");
+          }
+        },
+        onPending: function (result: any) {
+          console.log("Pembayaran pending:", result);
+          toast.info("Pembayaran menunggu konfirmasi.");
+        },
+        onError: function (result: any) {
+          console.error("Pembayaran gagal:", result);
+          toast.error("Pembayaran gagal!");
+        },
+        onClose: function () {
+          console.log("Popup pembayaran ditutup");
+          toast.info("Popup pembayaran ditutup.");
+        },
+      });
+    } else {
+      toast.error("Token pembayaran tidak ditemukan.");
+    }
+  } catch (err: any) {
+    toast.error(err?.response?.data?.message || "Gagal membuat pembayaran.");
+  }
+};
 </script>
 
 <template>
@@ -354,21 +450,11 @@ watch(
         Batal <i class="la la-times-circle p-0"></i>
       </button>
     </div>
-    <ErrorMessage name="nama_menu" />
-    <ErrorMessage name="jumlah" />
-    <ErrorMessage name="total_harga" />
-    <ErrorMessage name="alamat_asal" />
-    <ErrorMessage name="alamat_tujuan" />
-    <ErrorMessage name="provinceOrigin" />
-    <ErrorMessage name="cityOrigin" />
-    <ErrorMessage name="provinceDestination" />
-    <ErrorMessage name="kurir" />
-    <ErrorMessage name="cityDestination" />
-    <ErrorMessage name="jenis_layanan" />
-    <ErrorMessage name="berat_barang" />
-    <!-- <ErrorMessage name="status" /> -->
     <div class="card-body">
         <div class="row">
+
+          <!-- Informasi Produk -->
+           <h2 class="text-primary"> Informasi Produk </h2>
 
         <!-- Pilih Menu & Harga -->
         <div class="col-md-6 mb-4">
@@ -431,7 +517,7 @@ watch(
 
         <div class="col-md-6">
             <div class="fv-row mb-7">
-            <label class="form-label required fw-bold">Berat Barang (Kg)</label>
+            <label class="form-label required fw-bold">Berat Total (Kg)</label>
             <Field type="number" v-model="berat_barang" class="form-control" placeholder="Contoh: 0.5" min="0.1"
                 step="0.1" name="berat_barang" />
             <ErrorMessage name="berat_barang" class="text-danger small" />
@@ -439,6 +525,8 @@ watch(
             </div>
         </div>
 
+        <!-- Alamat Tujuan -->
+        <h2 class="mt-7 text-warning"> Alamat Tujuan</h2>
         <!-- Provinsi & Kota Tujuan -->
         <div class="col-md-6 mb-4">
           <label class="form-label required fw-bold">Provinsi Tujuan</label>
@@ -463,6 +551,9 @@ watch(
             placeholder="Masukan Alamat Lengkap" />
           <ErrorMessage name="alamat_tujuan" class="text-danger small" />
         </div>
+
+        <!-- Alamat Asal -->
+        <h2 class="mt-7 text-success"> Alamat Asal & Layanan</h2>
 
         <!-- Provinsi & Kota Asal -->
         <div class="col-md-6 mb-4">
@@ -528,7 +619,14 @@ watch(
       </div>
     </div>
     <div class="card-footer d-flex">
-        <button type="button" @click="onSubmit" class="btn btn-primary ms-auto"> Simpan </button>
+        <!-- <button type="button" @click="onSubmit" class="btn btn-primary ms-auto"> Simpan </button> -->
+        <button type="button" class="btn btn-success ms-auto" :disabled="isPaying" @click="bayar">
+        <span v-if="isPaying">
+            <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+            Memproses...
+        </span>
+        <span v-else> <i class="la la-credit-card me-1"></i> Bayar </span>
+        </button>
     </div>
   </VForm>
 </template>

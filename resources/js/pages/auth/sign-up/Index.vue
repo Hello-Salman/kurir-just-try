@@ -6,15 +6,15 @@
             <!--begin::Heading-->
             <div class="mb-10 text-center">
                 <router-link to="/">
-                    <img
+                    <!-- <img
                         :src="setting?.logo_depan"
                         alt="Logo Jombang"
                         class="w-100px mb-8"
-                    />
+                    /> -->
                 </router-link>
                 <!--begin::Title-->
                 <h1 class="text-dark mb-3">
-                    Daftar Akun <span class="text-primary">SI-LAJANG</span>
+                    Daftar Akun <span class="text-primary">Easy Eats</span>
                 </h1>
                 <!--end::Title-->
             </div>

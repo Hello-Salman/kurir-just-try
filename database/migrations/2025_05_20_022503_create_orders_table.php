@@ -13,13 +13,15 @@ return new class extends Migration
     {
         Schema::create('orders', function (Blueprint $table) {
             $table->id();
+            $table->string('no_resi')->nullable();
+
             $table->foreignId('id_menu')->references('id')->on('menus')->onDelete('cascade');
+            $table->foreignId('user_id')->references('id')->on('users')->onDelete('cascade');
 
             $table->string('jumlah');
             $table->string('total_harga');
-            $table->enum('status', ['on_delivery', 'selesai', 'batal'])->default('on_delivery');
+            $table->enum('status', ['dibayar', 'dikirim', 'diterima', 'batal'])->default('dibayar');
             $table->timestamps();
-
 
         });
     }

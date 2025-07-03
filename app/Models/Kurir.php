@@ -15,8 +15,6 @@ class Kurir extends Model
         'id',
         'user_id',
         'status',
-        'alamat_asal',
-        'alamat_tujuan',
         // 'photo', // Jika kamu upload gambar ke storage
     ];
 
@@ -30,8 +28,8 @@ class Kurir extends Model
         return $this->belongsTo(User::class, 'user_id');
     }
 
-    public function menu()
+    public function kirim()
     {
-        return $this->belongsTo(Menu::class, 'id_menu');
+        return $this->hasOne(Kirim::class, 'id_menu');
     }
 }

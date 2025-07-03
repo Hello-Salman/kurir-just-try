@@ -15,8 +15,6 @@ return new class extends Migration
             $table->id(); // Primary key
             $table->unsignedBigInteger('user_id')->unique(); // Foreign key ke tabel users
             $table->enum('status', ['Aktif', 'Nonaktif'])->default('Aktif'); // Status kurir
-            $table->string('alamat_asal')->nullable();
-            $table->string('alamat_tujuan')->nullable();
             $table->timestamps();
 
             $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');

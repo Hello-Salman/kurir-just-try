@@ -18,8 +18,11 @@ export interface User {
         full_name: string;
     };
     kurir?: {
-        id: number;
-        status:"Aktif" | "Nonaktif";
+        id: number,
+        user_id: number,
+        status: 'Aktif'|'Nonaktif',
+        created_at: string,
+        updated_at: string
     }
 }
 
